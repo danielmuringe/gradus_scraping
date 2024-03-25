@@ -5,8 +5,8 @@ from requests import RequestException, get as request_get
 from requests import HTTPError
 
 
-def get(url, stream=False):
-    response = request_get(url, stream)
+def get(url, stream_=False):
+    response = request_get(url, stream=stream_)
     response.raise_for_status()
     return response
 
@@ -37,7 +37,7 @@ def download_pdf(url, folder_path):
     try:
         # Create the folder if it doesn't exist
         folder_path = Path(folder_path)
-        folder_path.mkdir(
+        folder_path.parent.mkdir(
             parents=True, exist_ok=True
         )  # Create parent directories if needed
 
@@ -45,13 +45,14 @@ def download_pdf(url, folder_path):
         filename = Path(url).name
 
         # Check if the file already exists
-        filepath = folder_path / filename
+        filepath = folder_path.parent / filename
         if filepath.exists():
             print(f"PDF already exists: {filepath}")
             return False
 
         # Download the file
-        response = get(url, stream=True)
+        print(url)
+        response = get(url, stream_=True)
         response.raise_for_status()  # Raise an exception for unsuccessful download
 
         # Save the file

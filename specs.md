@@ -1,5 +1,3 @@
-## TODO
-
 ### Webpage
 
 #### DOI Page
@@ -22,7 +20,11 @@ MTMT Link Works
 Abstract in Original Language
 Opening Page Number
 Closing Page Number
+Author Emails
 
 ## Python Code
 
 ## Excel
+
+
+

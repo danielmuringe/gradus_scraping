@@ -14,6 +14,7 @@ data_json = []
 GRADUS_SOUP = BeautifulSoup(get(GRADUS_LINK).text, "html.parser")
 
 PDF_PATH = Path(__file__).parent / "pdf_articles"
+PDF_TO_HTML_PATH = Path(__file__).parent / "pdf_to_html_articles"
 
 
 # Get issues div
@@ -104,8 +105,3 @@ for year_tag in year_tags:
                         "MTMT Link Works": doi_link_works,
                     }
                 )
-
-                print(article_name.split(".")[0].strip())
-                print(pdf_link)
-                # print(mtmt_search_tag)
-                # print(mtmt_soup)
