@@ -24,7 +24,7 @@ year_tags = GRADUS_SOUP.select('div[style="float: left; width: 100%;"]')
 for year_tag in year_tags:
 
     # Get publication year
-    publication_year = year_tag.find("h3", recursive=False).text.strip()
+    pub_year = year_tag.find("h3", recursive=False).text.strip()
 
     for volume_info_tag in year_tag.find_all("a"):
         # Split text
@@ -59,6 +59,10 @@ for year_tag in year_tags:
 
                 # Download article pdf
                 pdf_link = f"{volume_catalog_link}/{article_name}"
+                download_pdf(
+                    pdf_link,
+                    PDF_PATH / f"{pub_year}/{volume}/{number}/{section}/{article_name}",
+                )
 
                 article_title = catalog_item.find(class_="tocTitle").text
 
@@ -86,7 +90,7 @@ for year_tag in year_tags:
 
                 data_json.append(
                     {
-                        "Publication Year": publication_year,
+                        "Publication Year": pub_year,
                         "Volume": volume,
                         "Number": number,
                         "Section": section,
