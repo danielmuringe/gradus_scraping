@@ -6,7 +6,7 @@ from requests import HTTPError
 from time import sleep
 
 
-def get(url, stream_=False):
+def get(url, stream_=False, to_fail=False):
 
     passed = False
     wait = 0
@@ -14,15 +14,20 @@ def get(url, stream_=False):
 
     while not passed:
         try:
+            print("Getting", url)
             response = request_get(url, stream=stream_)
+            print("Status code:", response.status_code)
             response.raise_for_status()
             passed = True
             wait = 0
-        except (RequestException, HTTPError):
-            wait += 5
-            wait %= 60
+        except HTTPError as e:
+            if to_fail:
+                raise e
+            wait += 1
+            wait %= 8
         finally:
             sleep(wait)
+            print("Waiting for", wait, "seconds")
 
     return response
 
@@ -132,10 +137,10 @@ def is_potential_heading(text, font_size_threshold=None, font_name="Helvetica-Bo
 
 def get_page_info(pdf_path):
 
-    info = {}
-
     pdf_reader = PyPDF2.PdfReader(pdf_path)
     pdf_pages = pdf_reader.pages
+
+    info = {"opening": 1, "closing": len(pdf_pages)}
 
     # Get opening page
     i = 0

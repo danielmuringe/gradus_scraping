@@ -85,17 +85,9 @@ for year_tag in year_tags:
                     doi_link_works: bool = False
 
                     try:
-                        doi_link_works = get(doi_link).status_code == 200
+                        doi_link_works = get(doi_link, to_fail=True)
                     except HTTPError as http_error:
                         pass
-
-                    mtmt_page_link = f"{MTMT_LINK}{quote(article_title)}"
-                    mtmt_soup = BeautifulSoup(get(mtmt_page_link).text, "html.parser")
-
-                    mtmt_search_tag = mtmt_soup.find(
-                        "li",
-                        class_="list-item ui-widget-content publication not-selected opened",
-                    )
 
                     # Get data from pdf
                     if DOWNLOAD:
@@ -123,5 +115,9 @@ for year_tag in year_tags:
                         }
                     )
 
+                    print(doi_link_works)
+
 df = DataFrame(data_json)
 df.to_excel("gradus_data.xlsx", index=False)
+
+print("DATA EXTRACTED!!")
