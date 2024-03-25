@@ -7,22 +7,21 @@
 - Volume
 - Number
 - Gradus Section
+- Original Title in Original Language
+- Title in English
 - DOI Link
 - DOI Link Works
 - Authors
-Article Name(PDF Name)
-Opening Page Number
-Closing Page Number
+- Article Name(PDF Name)
 
 #### MTMT Page
 MTMT Link
 MTMT Link Works
 
 ### PDF
-Original Title in Original Language
-Title in English
 Abstract in Original Language
-Author Email
+Opening Page Number
+Closing Page Number
 
 ## Python Code
 
