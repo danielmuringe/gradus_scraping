@@ -18,8 +18,8 @@ MTMT Link Works
 
 ### PDF
 Abstract in Original Language
-Opening Page Number
-Closing Page Number
+- Opening Page Number
+- Closing Page Number
 Author Emails
 
 ## Python Code

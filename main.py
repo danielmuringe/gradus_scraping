@@ -1,7 +1,11 @@
 from urllib.parse import quote
 from bs4 import BeautifulSoup
+from pandas import DataFrame
 from utils import *
 
+
+DOWNLOAD = True
+ACT = True
 
 GRADUS_LINK = "https://gradus.kefo.hu/archive/"
 MTMT_LINK = "https://m2.mtmt.hu/gui2/?mode=search&query=publication;labelOrMtid;eq;"
@@ -13,7 +17,7 @@ data_json = []
 
 GRADUS_SOUP = BeautifulSoup(get(GRADUS_LINK).text, "html.parser")
 
-PDF_PATH = Path(__file__).parent / "pdf_articles"
+PDFS_PATH = Path(__file__).parent / "pdf_articles"
 PDF_TO_HTML_PATH = Path(__file__).parent / "pdf_to_html_articles"
 
 
@@ -21,6 +25,7 @@ PDF_TO_HTML_PATH = Path(__file__).parent / "pdf_to_html_articles"
 issues_tag = GRADUS_SOUP.find("div", id="issues")
 year_tags = GRADUS_SOUP.select('div[style="float: left; width: 100%;"]')
 
+articles_number = 0
 
 for year_tag in year_tags:
 
@@ -55,53 +60,68 @@ for year_tag in year_tags:
             if catalog_item.attrs.get("class") == ["tocSectionTitle"]:
                 section = catalog_item.text.strip()
             else:
+
                 # Get article name
                 article_name = catalog_item.find("a")["href"]
+                articles_number += 1
 
-                # Download article pdf
-                pdf_link = f"{volume_catalog_link}/{article_name}"
-                download_pdf(
-                    pdf_link,
-                    PDF_PATH / f"{pub_year}/{volume}/{number}/{section}/{article_name}",
-                )
+                if ACT:
 
-                article_title = catalog_item.find(class_="tocTitle").text
+                    # Download article pdf
+                    pdf_link = f"{volume_catalog_link}/{article_name}"
+                    on_site_pdf_path = (
+                        PDFS_PATH
+                        / f"{pub_year}/{volume}/{number}/{section}/{article_name}"
+                    )
 
-                authors, doi_link = (
-                    catalog_item.find(class_="tocAuthors").text.strip().split("\n")
-                )
+                    article_title = catalog_item.find(class_="tocTitle").text
 
-                authors = authors.strip().split(",")
+                    authors, doi_link = (
+                        catalog_item.find(class_="tocAuthors").text.strip().split("\n")
+                    )
 
-                doi_link = doi_link
-                doi_link_works: bool = False
+                    authors = authors.strip().split(",")
 
-                try:
-                    doi_link_works = get(doi_link).status_code == 200
-                except HTTPError as http_error:
-                    pass
+                    doi_link_works: bool = False
 
-                mtmt_page_link = f"{MTMT_LINK}{quote(article_title)}"
-                mtmt_soup = BeautifulSoup(get(mtmt_page_link).text, "html.parser")
+                    try:
+                        doi_link_works = get(doi_link).status_code == 200
+                    except HTTPError as http_error:
+                        pass
 
-                mtmt_search_tag = mtmt_soup.find(
-                    "li",
-                    class_="list-item ui-widget-content publication not-selected opened",
-                )
+                    mtmt_page_link = f"{MTMT_LINK}{quote(article_title)}"
+                    mtmt_soup = BeautifulSoup(get(mtmt_page_link).text, "html.parser")
 
-                data_json.append(
-                    {
-                        "Publication Year": pub_year,
-                        "Volume": volume,
-                        "Number": number,
-                        "Section": section,
-                        "Article PDF Name": article_name.split(".")[0].strip(),
-                        "Original Article Title": article_title,
-                        "English Article Title": (article_title),
-                        "Authors": authors,
-                        "DOI Link": doi_link,
-                        "DOI Link Works": doi_link_works,
-                        "MTMT Link": doi_link,
-                        "MTMT Link Works": doi_link_works,
-                    }
-                )
+                    mtmt_search_tag = mtmt_soup.find(
+                        "li",
+                        class_="list-item ui-widget-content publication not-selected opened",
+                    )
+
+                    # Get data from pdf
+                    if DOWNLOAD:
+                        download_pdf(
+                            pdf_link,
+                            on_site_pdf_path,
+                        )
+
+                    info = get_page_info(on_site_pdf_path)
+
+                    data_json.append(
+                        {
+                            "Publication Year": pub_year,
+                            "Volume": volume,
+                            "Number": number,
+                            "Section": section,
+                            "Article PDF Name": article_name.split(".")[0].strip(),
+                            "Original Article Title": article_title,
+                            "English Article Title": (article_title),
+                            "Authors": authors,
+                            "DOI Link": doi_link,
+                            "DOI Link Works": doi_link_works,
+                            "Opening Page": info["opening"],
+                            "Closing Page": info["closing"],
+                        }
+                    )
+
+df = DataFrame(data_json)
+df.to_excel("gradus_data.xlsx", index=False)
